@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, JWT_EXPIRE } from '../configs/env.js';
+import mongoose from 'mongoose';
+const { ObjectId } = mongoose.Types;
 
 // register user
 export const registerUser = async (req, res) => {
@@ -40,11 +42,11 @@ export const loginUser = async (req, res) => {
   }
 
   const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
-  res.cookie('token', token, { 
-    httpOnly: true, 
-    secure: true, 
-    sameSite: 'None', 
-    maxAge: JWT_EXPIRE * 1000 
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+    maxAge: JWT_EXPIRE * 1000
   });
   res.status(200).json({ message: 'Login successfully', data: user });
 }
@@ -52,9 +54,16 @@ export const loginUser = async (req, res) => {
 // getuser
 export const getUser = async (req, res) => {
   const { id } = req.params;
+  let user;
   try {
-    // Find the user by ID or username
-    const user = await User.findOne({ userName: id });
+    // Check if the provided parameter is a valid ObjectId
+    if (ObjectId.isValid(id)) {
+      // Search by ID if the parameter is a valid ObjectId
+      user = await User.findById(id);
+    } else {
+      // Search by username if the parameter is not a valid ObjectId
+      user = await User.findOne({ userName: id });
+    }
 
     // If user is not found, return 404 error
     if (!user) {
@@ -69,6 +78,7 @@ export const getUser = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // update user
 export const updateUser = async (req, res) => {
