@@ -14,11 +14,18 @@ import cookieParser from 'cookie-parser';
 
 // Server Setup
 const app = express();
+
+// Allow requests from your frontend URL
+app.use(cors({
+  origin: 'https://nik6348.github.io',
+  credentials: true // Enable credentials (cookies, authorization headers, etc.)
+}));
+
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, 
   {
   cors: {
-    origin: "https://mern-chat-app-alpha-beige.vercel.app/",
+    origin: "https://nik6348.github.io",
     methods: ["GET", "POST"]
   }
 }

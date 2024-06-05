@@ -49,7 +49,7 @@ export const getUser = async (req, res) => {
   const { id } = req.params;
   try {
     // Find the user by ID or username
-    const user = await User.findOne({ $or: [{ _id: id }, { userName: id }] });
+    const user = await User.findOne({ userName: id });
 
     // If user is not found, return 404 error
     if (!user) {
