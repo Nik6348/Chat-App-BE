@@ -1,0 +1,8 @@
+// BEGIN
+
+node_modules
+.env
+.env*
+*.env
+
+// END
