@@ -21,7 +21,7 @@ mongoConnection(DB_URI);
 
 // Middlewares
 app.use(cors({
-  origin: 'https://nik6348.github.io/Chat-App-FE/', 
+  origin: 'https://nik6348.github.io/Chat-App-FE/',
   credentials: true // Enable credentials (cookies, authorization headers, etc.)
 }));
 app.use(express.json());
