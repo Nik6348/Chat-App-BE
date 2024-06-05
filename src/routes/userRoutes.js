@@ -1,6 +1,6 @@
 import express from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
-import { registerUser, loginUser, getUser, updateUser, deleteUser } from '../controllers/userController.js';
+import { registerUser, loginUser, getUser, updateUser, deleteUser, getMe } from '../controllers/userController.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
@@ -10,6 +10,9 @@ router.post('/register', asyncHandler(registerUser));
 
 // Route to login an existing user
 router.post('/login', asyncHandler(loginUser));
+
+// Route to get an login user
+router.get('/me', authMiddleware, asyncHandler(getMe));
 
 // Route to get a user by id
 router.get('/getuser/:id', authMiddleware, asyncHandler(getUser));
