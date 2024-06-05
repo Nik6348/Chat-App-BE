@@ -25,7 +25,7 @@ export const registerUser = async (req, res) => {
   res.status(201).json({ message: 'User registered successfully', data: user });
 };
 
-//login user
+// login user
 export const loginUser = async (req, res) => {
   const { userName, password } = req.body;
   const user = await User.findOne({ userName });
@@ -40,7 +40,12 @@ export const loginUser = async (req, res) => {
   }
 
   const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
-  res.cookie('token', token, { httpOnly: true, secure: true, maxAge: JWT_EXPIRE * 1000 });
+  res.cookie('token', token, { 
+    httpOnly: true, 
+    secure: true, 
+    sameSite: 'None', 
+    maxAge: JWT_EXPIRE * 1000 
+  });
   res.status(200).json({ message: 'Login successfully', data: user });
 }
 

@@ -26,7 +26,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(helmet());
-app.use(cookieParser())
+app.use(cookieParser());
 
 // Routes
 app.use('/api/user', userRoutes);
@@ -42,7 +42,6 @@ app.use(errorHandler);
 
 // Real-time Messaging Setup
 io.on('connection', (socket) => {
-  // Join a room with the user's ID
   const userId = socket.handshake.query.userId;
   socket.join(userId);
 
@@ -53,7 +52,6 @@ io.on('connection', (socket) => {
     socket.leave(userId);
   });
 
-  // Listen for chat messages and send them to the intended recipient
   socket.on('chat message', (msg) => {
     io.to(msg.recipientId).emit('chat message', msg);
   });
