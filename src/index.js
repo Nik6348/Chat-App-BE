@@ -11,31 +11,19 @@ import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
-
 // Server Setup
 const app = express();
-
-// Allow requests from your frontend URL
-app.use(cors({
-  origin: 'https://nik6348.github.io',
-  credentials: true // Enable credentials (cookies, authorization headers, etc.)
-}));
-
 const httpServer = createServer(app);
-const io = new SocketIOServer(httpServer, 
-  {
-  cors: {
-    origin: "https://nik6348.github.io",
-    methods: ["GET", "POST"]
-  }
-}
-);
+const io = new SocketIOServer(httpServer);
 
 // Database Connection
 mongoConnection(DB_URI);
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: 'https://nik6348.github.io',
+  credentials: true // Enable credentials (cookies, authorization headers, etc.)
+}));
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser())
@@ -48,7 +36,6 @@ app.use('/api/friend', friendRoutes);
 app.use('/', (req, res) => {
   res.send('Welcome to Chat App API');
 });
-
 
 // Error Handling
 app.use(errorHandler);
