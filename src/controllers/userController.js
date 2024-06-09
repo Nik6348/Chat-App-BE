@@ -79,6 +79,17 @@ export const getUser = async (req, res) => {
   }
 };
 
+// Search users
+export const searchUsers = async (req, res) => {
+  const { query } = req.params;
+  const users = await User.find({
+    $or: [
+      { fullName: { $regex: query, $options: 'i' } },
+      { userName: { $regex: query, $options: 'i' } },
+    ],
+  });
+  res.status(200).json({ message: 'Users found successfully', data: users });
+};
 
 // update user
 export const updateUser = async (req, res) => {

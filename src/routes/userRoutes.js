@@ -1,6 +1,6 @@
 import express from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
-import { registerUser, loginUser, getUser, updateUser, deleteUser, getMe } from '../controllers/userController.js';
+import { registerUser, loginUser, getUser, searchUsers, updateUser, deleteUser, getMe } from '../controllers/userController.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
@@ -16,6 +16,9 @@ router.get('/me', authMiddleware, asyncHandler(getMe));
 
 // Route to get a user by id
 router.get('/getuser/:id', authMiddleware, asyncHandler(getUser));
+
+// Route to search users by userName
+router.get('/search/:query', authMiddleware, asyncHandler(searchUsers));
 
 // Route to update a user
 router.patch('/update', authMiddleware, asyncHandler(updateUser));
