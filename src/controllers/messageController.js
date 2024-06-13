@@ -1,6 +1,8 @@
 import { Message } from '../models/messageModel.js';
 import { encrypt, decrypt } from '../utils/encription.js';
-
+import { AWS_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION } from '../configs/env.js';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import fs from 'fs';
 // Controller to send a new message
 export const sendMessage = async (req, res) => {
     const { friendId } = req.params;
@@ -43,7 +45,7 @@ export const getMessages = async (req, res) => {
 };
 
 // Controller to update a message
-export const editMessage = async (req, res) => {
+export const updateStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
@@ -53,7 +55,7 @@ export const editMessage = async (req, res) => {
         { new: true }
     );
 
-    res.status(200).json({ message: 'Message updated successfully', data: message });
+    res.status(200).json({ message: 'Message status updated successfully', data: message });
 };
 
 // Controller to delete a message
@@ -78,4 +80,25 @@ export const deleteAllMessageSpecificUser = async (req, res) => {
         ],
     });
     res.send(`All messages between user with ID ${userId} and user with ID ${friendId} deleted successfully`)
+};
+
+// Controller to upload a file
+export const uploadFile = async (req, res) => {
+    const s3Client = new S3Client({
+        region: AWS_REGION,
+        credentials: {
+            accessKeyId: AWS_ACCESS_KEY_ID,
+            secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        },
+    });
+    const fileContent = fs.readFileSync(req.file.path);
+    const params = {
+        Bucket: AWS_BUCKET_NAME,
+        Key: req.file.filename,
+        Body: fileContent,
+    };
+
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+    res.status(200).json({ message: 'File uploaded successfully' });
 };

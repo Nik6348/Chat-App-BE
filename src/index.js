@@ -1,3 +1,4 @@
+// /server.js
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -11,25 +12,20 @@ import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
-// Server Setup
 const app = express();
 const httpServer = createServer(app);
 
-// Socket.IO with CORS Configuration
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: ['https://nik6348.github.io'], 
-    methods: ['GET', 'POST'],
+    origin: ['http://localhost:5173'],
     credentials: true,
-  },
+  }
 });
 
-// Database Connection
 mongoConnection(DB_URI);
 
-// Middlewares
 app.use(cors({
-  origin: ['https://nik6348.github.io'], 
+  origin: ['http://localhost:5173'],
   credentials: true,
 }));
 
@@ -37,7 +33,6 @@ app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
 
-// Routes
 app.use('/api/user', userRoutes);
 app.use('/api/message', messageRoutes);
 app.use('/api/friend', friendRoutes);
@@ -46,28 +41,33 @@ app.use('/', (req, res) => {
   res.send('Welcome to Chat App API');
 });
 
-// Error Handling
 app.use(errorHandler);
 
-// Real-time Messaging Setup (unchanged)
+
+// Socket IO
 io.on('connection', (socket) => {
   const userId = socket.handshake.query.userId;
   socket.join(userId);
+  console.log('User connected: ', userId);
 
-  console.log(`User ${userId} connected`);
-
-
-  socket.on('disconnect', () => {
-    console.log(`User ${userId} disconnected`);
-    socket.leave(userId);
+  socket.on('send_message', (msg) => {
+    console.log('Message received on server: ', msg);
+    io.to(msg.receiver).emit('receive_message', msg);
   });
 
-  socket.on('chat message', (msg) => {
-    io.to(msg.recipientId).emit('chat message', msg);
+  socket.on('message_delivered', ({ messageId }) => {
+    io.emit('update_message_status', { messageId, status: 'Delivered' });
+  });
+
+  socket.on('message_seen', ({ messageId }) => {
+    io.emit('update_message_status', { messageId, status: 'Seen' });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected', userId);
   });
 });
 
-// Listen on the HTTP server, not the Express app
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
