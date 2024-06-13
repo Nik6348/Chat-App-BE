@@ -15,12 +15,18 @@ import cookieParser from 'cookie-parser';
 const app = express();
 const httpServer = createServer(app);
 
+const corsOptions = {
+  origin: ['https://nik6348.github.io', 'http://localhost:5173'],
+  credentials: true
+};
+
+// Enable CORS for Express routes
+app.use(cors(corsOptions));
+
 const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: ['https://nik6348.github.io', 'http://localhost:5173'],
-    credentials: true,
-  }
+  cors: corsOptions
 });
+
 
 mongoConnection(DB_URI);
 
