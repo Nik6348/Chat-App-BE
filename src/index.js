@@ -1,4 +1,3 @@
-// /server.js
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -12,29 +11,24 @@ import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
+// Server Setup
 const app = express();
 const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer);
 
-const corsOptions = {
-  origin: ['https://nik6348.github.io', 'http://localhost:5173'],
-  credentials: true
-};
-
-// Enable CORS for Express routes
-app.use(cors(corsOptions));
-
-const io = new SocketIOServer(httpServer, {
-  cors: corsOptions
-});
-
-
+// Database Connection
 mongoConnection(DB_URI);
 
-
+// Middlewares
+app.use(cors({
+  origin: 'https://nik6348.github.io',
+  credentials: true // Enable credentials (cookies, authorization headers, etc.)
+}));
 app.use(express.json());
 app.use(helmet());
-app.use(cookieParser());
+app.use(cookieParser())
 
+// Routes
 app.use('/api/user', userRoutes);
 app.use('/api/message', messageRoutes);
 app.use('/api/friend', friendRoutes);
@@ -43,14 +37,21 @@ app.use('/', (req, res) => {
   res.send('Welcome to Chat App API');
 });
 
+// Error Handling
 app.use(errorHandler);
 
-
-// Socket IO
+// Real-time Messaging Setup
 io.on('connection', (socket) => {
+  // Join a room with the user's ID
   const userId = socket.handshake.query.userId;
   socket.join(userId);
-  console.log('User connected: ', userId);
+
+  console.log(`User ${userId} connected`);
+
+  socket.on('disconnect', () => {
+    console.log(`User ${userId} disconnected`);
+    socket.leave(userId);
+  });
 
   socket.on('send_message', (msg) => {
     console.log('Message received on server: ', msg);
@@ -64,12 +65,8 @@ io.on('connection', (socket) => {
   socket.on('message_seen', ({ messageId }) => {
     io.emit('update_message_status', { messageId, status: 'Seen' });
   });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected', userId);
-  });
 });
-
+// Listen on the HTTP server, not the Express app
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
