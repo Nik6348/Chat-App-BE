@@ -26,7 +26,7 @@ const corsOptions = {
 };
 
 // Enable CORS for Express routes
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Enable CORS for Socket.io
 const io = new SocketIOServer(httpServer, {
