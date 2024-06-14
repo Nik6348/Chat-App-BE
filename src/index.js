@@ -10,7 +10,6 @@ import friendRoutes from './routes/friendRoutes.js';
 import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { Message } from './models/messageModel.js';
 
 // Server Setup
 const app = express();
@@ -21,8 +20,7 @@ mongoConnection(DB_URI);
 
 // CORS Configuration
 const corsOptions = {
-  origin: 'https://nik6348.github.io',
-  // origin: 'http://localhost:5173/',
+  origin: ['https://nik6348.github.io', 'https://chat-app-fe-black.vercel.app/', 'http://localhost:5173'],
   credentials: true
 };
 
