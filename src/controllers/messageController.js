@@ -24,6 +24,18 @@ export const sendMessage = async (req, res) => {
     res.status(201).json({ message: 'Message sent successfully', data: message });
 };
 
+// Controller to get a specific message by ID
+export const getMessageById = async (req, res) => {
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+
+    // decrypt message
+    message.text = decrypt({ encryptedData: message.text, iv: message.iv });
+
+    res.status(200).json({ message: 'Message retrieved successfully', data: message });
+};
+
 // Controller to get messages between two users
 export const getMessages = async (req, res) => {
     const { friendId } = req.params;
