@@ -14,16 +14,26 @@ import cookieParser from 'cookie-parser';
 // Server Setup
 const app = express();
 const httpServer = createServer(app);
-const io = new SocketIOServer(httpServer);
 
 // Database Connection
 mongoConnection(DB_URI);
 
-// Middlewares
-app.use(cors({
+// CORS Configuration
+const corsOptions = {
   origin: 'https://nik6348.github.io',
   credentials: true // Enable credentials (cookies, authorization headers, etc.)
-}));
+};
+
+// Enable CORS for Express routes
+app.use(cors(corsOptions));
+
+// Enable CORS for Socket.io
+const io = new SocketIOServer(httpServer, {
+  cors: corsOptions
+});
+
+
+// Middlewares
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser())
