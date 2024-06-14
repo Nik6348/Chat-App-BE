@@ -10,7 +10,7 @@ import friendRoutes from './routes/friendRoutes.js';
 import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { Message } from './models/messageModel.js'; // Import your Message model
+import { Message } from './models/messageModel.js';
 
 // Server Setup
 const app = express();
@@ -22,6 +22,7 @@ mongoConnection(DB_URI);
 // CORS Configuration
 const corsOptions = {
   origin: 'https://nik6348.github.io',
+  // origin: 'http://localhost:5173/',
   credentials: true
 };
 
@@ -65,40 +66,18 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', async (msg) => {
-    try {
-      // Create and save the message in the database
-      const newMessage = new Message(msg);
-      await newMessage.save();
-
-      // Emit the message to the recipient
-      io.to(msg.receiver).emit('receive_message', newMessage);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
+    // Emit the message to the recipient
+    io.to(msg.receiver).emit('receive_message', msg);
   });
 
   socket.on('message_delivered', async ({ messageId }) => {
-    try {
-      // Update the message status in the database
-      const message = await Message.findByIdAndUpdate(messageId, { status: 'Delivered' });
-
-      // Emit the status update to the recipient
-      io.to(message.receiver).emit('update_message_status', { messageId, status: 'Delivered' });
-    } catch (error) {
-      console.error('Error updating message status:', error);
-    }
+    // Emit the status update to the recipient
+    io.emit('update_message_status', { messageId, status: 'Delivered' });
   });
 
   socket.on('message_seen', async ({ messageId }) => {
-    try {
-      // Update the message status in the database
-      const message = await Message.findByIdAndUpdate(messageId, { status: 'Seen' });
-
-      // Emit the status update to the recipient
-      io.to(message.receiver).emit('update_message_status', { messageId, status: 'Seen' });
-    } catch (error) {
-      console.error('Error updating message status:', error);
-    }
+    // Emit the status update to the recipient
+    io.emit('update_message_status', { messageId, status: 'Seen' });
   });
 });
 
