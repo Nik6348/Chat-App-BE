@@ -10,6 +10,7 @@ import friendRoutes from './routes/friendRoutes.js';
 import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { Message } from './models/messageModel.js'; // Import your Message model
 
 // Server Setup
 const app = express();
@@ -21,12 +22,11 @@ mongoConnection(DB_URI);
 // CORS Configuration
 const corsOptions = {
   origin: 'https://nik6348.github.io',
-  optionsSuccessStatus: 200,
-  credentials: true // Enable credentials (cookies, authorization headers, etc.)
+  credentials: true
 };
 
 // Enable CORS for Express routes
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Enable CORS for Socket.io
 const io = new SocketIOServer(httpServer, {
@@ -64,19 +64,44 @@ io.on('connection', (socket) => {
     socket.leave(userId);
   });
 
-  socket.on('send_message', (msg) => {
-    console.log('Message received on server: ', msg);
-    io.to(msg.receiver).emit('receive_message', msg);
+  socket.on('send_message', async (msg) => {
+    try {
+      // Create and save the message in the database
+      const newMessage = new Message(msg);
+      await newMessage.save();
+
+      // Emit the message to the recipient
+      io.to(msg.receiver).emit('receive_message', newMessage);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   });
 
-  socket.on('message_delivered', ({ messageId }) => {
-    io.emit('update_message_status', { messageId, status: 'Delivered' });
+  socket.on('message_delivered', async ({ messageId }) => {
+    try {
+      // Update the message status in the database
+      const message = await Message.findByIdAndUpdate(messageId, { status: 'Delivered' });
+
+      // Emit the status update to the recipient
+      io.to(message.receiver).emit('update_message_status', { messageId, status: 'Delivered' });
+    } catch (error) {
+      console.error('Error updating message status:', error);
+    }
   });
 
-  socket.on('message_seen', ({ messageId }) => {
-    io.emit('update_message_status', { messageId, status: 'Seen' });
+  socket.on('message_seen', async ({ messageId }) => {
+    try {
+      // Update the message status in the database
+      const message = await Message.findByIdAndUpdate(messageId, { status: 'Seen' });
+
+      // Emit the status update to the recipient
+      io.to(message.receiver).emit('update_message_status', { messageId, status: 'Seen' });
+    } catch (error) {
+      console.error('Error updating message status:', error);
+    }
   });
 });
+
 // Listen on the HTTP server, not the Express app
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
