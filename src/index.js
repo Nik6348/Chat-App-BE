@@ -1,3 +1,4 @@
+// Server Setup
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -11,48 +12,47 @@ import { errorHandler } from './middlewares/errorHandlers.js';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
-// Server Setup
+// Initialize Express App and HTTP Server
 const app = express();
 const httpServer = createServer(app);
 
-// Database Connection
+// Connect to MongoDB
 mongoConnection(DB_URI);
 
 // CORS Configuration
 const corsOptions = {
-  origin: ['https://nik6348.github.io', 'https://chat-app-fe-black.vercel.app/', 'http://localhost:5173'],
-  credentials: true
+  origin: ['https://nik6348.github.io', 'http://localhost:5173'],
+  credentials: true,
 };
 
-// Enable CORS for Express routes
+// Apply Middlewares
 app.use(cors(corsOptions));
-
-// Enable CORS for Socket.io
-const io = new SocketIOServer(httpServer, {
-  cors: corsOptions
-});
-
-
-// Middlewares
 app.use(express.json());
 app.use(helmet());
-app.use(cookieParser())
+app.use(cookieParser());
 
-// Routes
+// Define Routes
 app.use('/api/user', userRoutes);
 app.use('/api/message', messageRoutes);
 app.use('/api/friend', friendRoutes);
-
 app.use('/', (req, res) => {
   res.send('Welcome to Chat App API');
 });
 
-// Error Handling
+// Error Handling Middleware
 app.use(errorHandler);
 
-// Real-time Messaging Setup
+// Initialize Socket.io
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: corsOptions.origin,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// Socket.io Events
 io.on('connection', (socket) => {
-  // Join a room with the user's ID
   const userId = socket.handshake.query.userId;
   socket.join(userId);
 
@@ -64,22 +64,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', async (msg) => {
-    // Emit the message to the recipient
     io.to(msg.receiver).emit('receive_message', msg);
   });
 
   socket.on('message_delivered', async ({ messageId }) => {
-    // Emit the status update to the recipient
     io.emit('update_message_status', { messageId, status: 'Delivered' });
   });
 
   socket.on('message_seen', async ({ messageId }) => {
-    // Emit the status update to the recipient
     io.emit('update_message_status', { messageId, status: 'Seen' });
   });
 });
 
-// Listen on the HTTP server, not the Express app
+// Start Server
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
