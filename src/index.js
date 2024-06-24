@@ -64,14 +64,20 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', async (msg) => {
+    console.log('Message sent:', msg);
+    // Emit the message to the recipient
     io.to(msg.receiver).emit('receive_message', msg);
   });
 
   socket.on('message_delivered', async ({ messageId }) => {
+    console.log('Message delivered:', messageId);
+    // Emit the status update to the recipient
     io.emit('update_message_status', { messageId, status: 'Delivered' });
   });
 
   socket.on('message_seen', async ({ messageId }) => {
+    console.log('Message seen:', messageId);
+    // Emit the status update to the recipient
     io.emit('update_message_status', { messageId, status: 'Seen' });
   });
 });
