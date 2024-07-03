@@ -1,7 +1,7 @@
 // Server Setup
 import express from 'express';
 import cors from 'cors';
-import { METHODS, createServer } from 'http';
+import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { mongoConnection } from './database/db.js';
 import { DB_URI, PORT } from './configs/env.js';
@@ -21,9 +21,9 @@ mongoConnection(DB_URI);
 
 // CORS Configuration
 const corsOptions = {
-  origin: ['https://Nik6348.github.io/', 'http://localhost:5173'],
-  METHODS: ['GET', 'POST', 'PUT', 'DELETE'],
-  Credential: true,
+  origin: ['https://nik6348.github.io', 'http://localhost:5173'],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  credentials: true,
 };
 
 // Apply Middlewares
@@ -46,7 +46,8 @@ app.use(errorHandler);
 // Initialize Socket.io
 const io = new SocketIOServer(httpServer, {
   cors: {
-    corsOptions
+    origin: corsOptions.origin,
+    credentials: true,
   },
 });
 
