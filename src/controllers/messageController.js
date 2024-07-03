@@ -67,7 +67,7 @@ export const updateStatus = async (req, res) => {
         { new: true }
     );
 
-    res.status(200).json({ message: 'Message status updated successfully', data: message });
+    res.status(200).json({ message: `Message ${status} successfully`, data: message });
 };
 
 // Controller to delete a message
