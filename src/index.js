@@ -58,11 +58,6 @@ io.on('connection', (socket) => {
 
   console.log(`User ${userId} connected`);
 
-  socket.on('disconnect', () => {
-    console.log(`User ${userId} disconnected`);
-    socket.leave(userId);
-  });
-
   socket.on('send_message', async (msg) => {
     console.log('Message sent:', msg);
     // Emit the message to the recipient
@@ -79,6 +74,11 @@ io.on('connection', (socket) => {
     console.log('Message seen:', messageId);
     // Emit the status update to the recipient
     io.emit('update_message_status', { messageId, status: 'Seen' });
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User ${userId} disconnected`);
+    socket.leave(userId);
   });
 });
 
