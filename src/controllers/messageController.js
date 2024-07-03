@@ -59,7 +59,7 @@ export const getMessages = async (req, res) => {
 // Controller to update a message
 export const updateStatus = async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
+    const status  = req.body;
 
     const message = await Message.findByIdAndUpdate(
         id,
