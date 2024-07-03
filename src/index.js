@@ -21,7 +21,7 @@ mongoConnection(DB_URI);
 
 // CORS Configuration
 const corsOptions = {
-  origin: ['https://nik6348.github.io', 'http://localhost:5173'],
+  origin: ['https://nik6348.github.io/Chat-App-FE/#/', 'http://localhost:5173'],
   credentials: true,
 };
 
